@@ -1,1 +1,306 @@
-i
+import React, { useState } from 'react';
+import { Heart, Sparkles } from 'lucide-react';
+
+const WifeQuiz = () => {
+  const [started, setStarted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [noButtonPosition, setNoButtonPosition] = useState({ x: '60%', y: '60%' });
+  const [yesButtonPosition, setYesButtonPosition] = useState({ x: '20%', y: '30%' });
+  const [showFinal, setShowFinal] = useState(false);
+  const [confetti, setConfetti] = useState([]);
+  const [yesAttempts, setYesAttempts] = useState(0);
+  const [showJoke, setShowJoke] = useState(false);
+
+  const questions = [
+    {
+      question: "Кто больше любит сладкое?",
+      yes: "Я 👨",
+      no: "Ты 👩",
+      type: "normal"
+    },
+    {
+      question: "Ты согласна, что твой муж всегда прав?",
+      yes: "Конечно!",
+      no: "Нет",
+      type: "normal"
+    },
+    {
+      question: "Кто больше спит по утрам?",
+      yes: "Я 👨",
+      no: "Ты 👩",
+      type: "normal"
+    },
+    {
+      question: "Кто более романтичный?",
+      yes: "Ты 👩",
+      no: "Я 👨",
+      type: "normal"
+    },
+    {
+      question: "Кто красивее?",
+      yes: "Ты 👩",
+      no: "Я 👨",
+      type: "normal"
+    },
+    {
+      question: "Кто умнее?",
+      yes: "Я 👨",
+      no: "Ты 👩",
+      type: "normal"
+    },
+    {
+      question: "Кто главный в семье?",
+      yes: "Я 👨",
+      no: "Ты 👩",
+      type: "normal"
+    },
+    {
+      question: "Кто лучше водит машину?",
+      yes: "Я 👨",
+      no: "Ты 👩",
+      type: "normal"
+    },
+    {
+      question: "Согласна, что ты счастлива со мной?",
+      yes: "Да!",
+      no: "Нет",
+      type: "normal"
+    },
+    {
+      question: "Ты самая лучшая жена на свете?",
+      yes: "Да ❤️",
+      no: "Нет",
+      type: "special"
+    }
+  ];
+
+  const getRandomPosition = () => {
+    const x = 5 + Math.random() * 85; // 5-90% - весь экран!
+    const y = 10 + Math.random() * 80; // 10-90% - весь экран!
+    return { x: `${x}%`, y: `${y}%` };
+  };
+
+  const ensureButtonsDontOverlap = (pos1, pos2) => {
+    const x1 = parseFloat(pos1.x);
+    const y1 = parseFloat(pos1.y);
+    let x2 = parseFloat(pos2.x);
+    let y2 = parseFloat(pos2.y);
+    
+    let attempts = 0;
+    while (attempts < 20) {
+      const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+      
+      // Минимальное расстояние 60% - очень большое расстояние
+      if (distance > 60) {
+        return { x: `${x2}%`, y: `${y2}%` };
+      }
+      
+      const newPos = getRandomPosition();
+      x2 = parseFloat(newPos.x);
+      y2 = parseFloat(newPos.y);
+      attempts++;
+    }
+    
+    // Если не нашли подходящую позицию, ставим в противоположный угол
+    const oppositeX = x1 < 50 ? 70 : 20;
+    const oppositeY = y1 < 50 ? 70 : 20;
+    return { x: `${oppositeX}%`, y: `${oppositeY}%` };
+  };
+
+  const handleYesClick = () => {
+    const currentQ = questions[currentQuestion];
+    
+    if (currentQ.type === "special") {
+      if (yesAttempts === 0) {
+        const newYesPos = getRandomPosition();
+        const finalYesPos = ensureButtonsDontOverlap(noButtonPosition, newYesPos);
+        setYesButtonPosition(finalYesPos);
+        setYesAttempts(1);
+        setShowJoke(true);
+        setTimeout(() => {
+          setShowJoke(false);
+        }, 2000);
+      } else if (yesAttempts === 1) {
+        nextQuestion();
+      }
+    } else {
+      nextQuestion();
+    }
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setYesAttempts(0);
+      setShowJoke(false);
+      setNoButtonPosition({ x: '60%', y: '60%' });
+      setYesButtonPosition({ x: '20%', y: '30%' });
+    } else {
+      triggerConfetti();
+      setShowFinal(true);
+    }
+  };
+
+  const handleNoHover = () => {
+    const newPos = getRandomPosition();
+    const finalPos = ensureButtonsDontOverlap(yesButtonPosition, newPos);
+    setNoButtonPosition(finalPos);
+  };
+
+  const triggerConfetti = () => {
+    const newConfetti = [];
+    for (let i = 0; i < 150; i++) {
+      newConfetti.push({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        delay: Math.random() * 3,
+        duration: 3 + Math.random() * 3
+      });
+    }
+    setConfetti(newConfetti);
+  };
+
+  if (!started) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-400 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-16 max-w-lg md:max-w-3xl text-center w-full mx-4">
+          <Heart className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 text-pink-500 animate-bounce" />
+          <h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-6 md:mb-8">
+            Привет, любимая!
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-700 mb-8 md:mb-12 leading-relaxed">
+            У меня для тебя небольшой квест...
+          </p>
+          <button
+            onClick={() => setStarted(true)}
+            className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-10 py-4 md:px-16 md:py-5 rounded-full text-xl md:text-2xl font-bold hover:scale-110 transition-transform shadow-xl"
+          >
+            Начать! 🎉
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (showFinal) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-400 via-red-400 to-orange-400 flex items-center justify-center p-4 relative overflow-hidden">
+        {confetti.map((conf) => (
+          <div
+            key={conf.id}
+            className="absolute text-3xl md:text-5xl"
+            style={{
+              left: `${conf.x}%`,
+              top: `${conf.y}%`,
+              animation: `float ${conf.duration}s ease-in-out infinite`,
+              animationDelay: `${conf.delay}s`
+            }}
+          >
+            {['❤️', '💖', '✨', '🌟', '💝', '🎉', '🎊'][Math.floor(Math.random() * 7)]}
+          </div>
+        ))}
+        
+        <style>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+          }
+        `}</style>
+        
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-16 max-w-lg md:max-w-3xl text-center relative z-10 mx-4 w-full">
+          <Sparkles className="w-20 h-20 md:w-28 md:h-28 mx-auto mb-6 md:mb-8 text-pink-500 animate-pulse" />
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6 md:mb-8">
+            Поздравляю! 🎉
+          </h1>
+          <p className="text-2xl md:text-3xl text-gray-700 mb-6 md:mb-8 leading-relaxed">
+            С Днём учителя, моя любимая! ❤️
+          </p>
+          <p className="text-lg md:text-2xl text-gray-600 mb-8 md:mb-12 leading-relaxed">
+            Ты самая лучшая, самая красивая, самая умная и самая замечательная жена в мире!
+          </p>
+          <Heart className="w-16 h-16 md:w-20 md:h-20 mx-auto text-red-500 animate-bounce" />
+          <p className="text-3xl md:text-4xl font-bold text-pink-600 mt-8 md:mt-10">
+            Я люблю тебя! 💕
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const currentQ = questions[currentQuestion];
+  const isSpecialQuestion = currentQ.type === "special" && yesAttempts === 0;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-12 max-w-lg md:max-w-2xl w-full mx-4">
+        <div className="mb-6 md:mb-8">
+          <div className="flex justify-between mb-3 md:mb-4">
+            {questions.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-2 md:h-3 flex-1 mx-1 rounded ${
+                  idx <= currentQuestion ? 'bg-pink-500' : 'bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+          <p className="text-base md:text-lg text-gray-600 text-center font-semibold">
+            Вопрос {currentQuestion + 1} из {questions.length}
+          </p>
+        </div>
+
+        <h2 className="text-2xl md:text-4xl font-bold text-gray-800 mb-8 md:mb-12 text-center leading-tight px-2">
+          {currentQ.question}
+        </h2>
+
+        {showJoke && (
+          <p className="text-center text-xl md:text-2xl text-red-600 font-bold mb-4 md:mb-6 animate-pulse">
+            Ой, кто-то врёт! 😏
+          </p>
+        )}
+
+        {yesAttempts === 1 && currentQ.type === "special" && (
+          <p className="text-center text-xl md:text-2xl text-green-600 font-bold mb-4 md:mb-6 animate-bounce">
+            Ладно, шучу! Нажми! 😄
+          </p>
+        )}
+
+        <div className="relative w-full" style={{ height: '350px', touchAction: 'none' }}>
+          <button
+            onClick={handleYesClick}
+            className="bg-gradient-to-r from-green-400 to-green-600 text-white px-8 py-3 md:px-12 md:py-4 rounded-full text-lg md:text-xl font-bold hover:scale-105 active:scale-95 transition-transform shadow-xl absolute"
+            style={isSpecialQuestion ? {
+              left: yesButtonPosition.x,
+              top: yesButtonPosition.y,
+              transform: 'translate(-50%, -50%)',
+              transition: 'none'
+            } : {
+              left: '50%',
+              top: '30%',
+              transform: 'translate(-50%, -50%)'
+            }}
+          >
+            {currentQ.yes}
+          </button>
+
+          <button
+            onMouseEnter={handleNoHover}
+            onTouchStart={handleNoHover}
+            className="bg-gradient-to-r from-red-400 to-red-600 text-white px-8 py-3 md:px-12 md:py-4 rounded-full text-lg md:text-xl font-bold shadow-xl absolute cursor-pointer"
+            style={{
+              left: noButtonPosition.x,
+              top: noButtonPosition.y,
+              transform: 'translate(-50%, -50%)',
+              transition: 'all 0.01s linear'
+            }}
+          >
+            {currentQ.no}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default WifeQuiz;
